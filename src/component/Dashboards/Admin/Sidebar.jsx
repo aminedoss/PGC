@@ -19,11 +19,11 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
       onClick={() => setSelected(title)}
       icon={icon}
     >
-      <Typography>
-        <Link to={to} style={{ color: "inherit", textDecoration: "none" }}>
+      <Link to={to} style={{ color: "inherit", textDecoration: "none", display: "block", width: "100%" }}>
+        <Typography>
           {title}
-        </Link>
-      </Typography>
+        </Typography>
+      </Link>
     </MenuItem>
   );
 };

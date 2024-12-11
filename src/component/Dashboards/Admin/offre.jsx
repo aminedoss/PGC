@@ -4,39 +4,57 @@ import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "./Header";
 import SidebarComponent from "./Sidebar";
-import axios from "axios"; // Import Axios
 
 const Offre = () => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
-  // Fonction pour gérer la soumission du formulaire
   const handleFormSubmit = async (values) => {
     try {
-      const response = await axios.post(
-        "http://localhost:3300/api/v1/job/create-job", // URL de l'API
-        values,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Ajoutez votre token JWT si nécessaire
-          },
-        }
-      );
-      alert("Offre créée avec succès !");
-      console.log("Réponse de l'API :", response.data);
+      const token = localStorage.getItem('token'); // Retrieve the token
+      console.log("Auth Token:", token); // Log the token
+
+      // Check if the token exists
+      if (!token) {
+        throw new Error("NO Auth"); // Throw error if no token is found
+      }
+
+      const response = await fetch("http://localhost:3300/api/v1/job/create-job", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // Include the token in the Authorization header
+        },
+        body: JSON.stringify({
+          company: values.company,
+          position: values.position,
+          workType: values.workType,
+          company_phone: values.company_phone,
+          company_email: values.company_email,
+          workLocation: values.address,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create job offer");
+      }
+
+      const data = await response.json();
+      console.log("Job created:", data.job); // Log the created job
     } catch (error) {
-      console.error("Erreur lors de la création de l'offre :", error.response?.data || error.message);
-      alert("Échec de la création de l'offre. Vérifiez vos informations.");
+      console.error("Error:", error.message); // Log the error message
+      alert(error.message); // Optional: Display error to the user
     }
   };
 
   return (
     <Box display="flex" sx={{ minHeight: "100vh" }}>
-      {/* Barre latérale */}
+      {/* Sidebar */}
       <SidebarComponent />
 
-      {/* Contenu principal */}
+      {/* Main Content */}
       <Box flex="1" p="20px">
-        <Header title="CRÉER UNE OFFRE" subtitle="Créer une nouvelle offre d'emploi" />
+        <Header title="CREATE OFFER" subtitle="Create a New User JOB OFFER" />
 
         <Formik
           onSubmit={handleFormSubmit}
@@ -64,7 +82,7 @@ const Offre = () => {
                   fullWidth
                   variant="filled"
                   type="text"
-                  label="Entreprise"
+                  label="Company"
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.company}
@@ -77,7 +95,7 @@ const Offre = () => {
                   fullWidth
                   variant="filled"
                   type="text"
-                  label="Poste"
+                  label="Position"
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.position}
@@ -90,7 +108,7 @@ const Offre = () => {
                   fullWidth
                   variant="filled"
                   type="text"
-                  label="Type de Travail"
+                  label="Work Type"
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.workType}
@@ -103,33 +121,33 @@ const Offre = () => {
                   fullWidth
                   variant="filled"
                   type="text"
-                  label="Lieu de Travail"
+                  label="Phone"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  value={values.workLocation}
-                  name="workLocation"
-                  error={!!touched.workLocation && !!errors.workLocation}
-                  helperText={touched.workLocation && errors.workLocation}
+                  value={values.company_phone}
+                  name="company_phone"
+                  error={!!touched.company_phone && !!errors.company_phone}
+                  helperText={touched.company_phone && errors.company_phone}
                   sx={{ gridColumn: "span 4" }}
                 />
                 <TextField
                   fullWidth
                   variant="filled"
                   type="text"
-                  label="Créé par (User ID)"
+                  label="Email"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  value={values.createdBy}
-                  name="createdBy"
-                  error={!!touched.createdBy && !!errors.createdBy}
-                  helperText={touched.createdBy && errors.createdBy}
+                  value={values.company_email}
+                  name="company_email"
+                  error={!!touched.company_email && !!errors.company_email}
+                  helperText={touched.company_email && errors.company_email}
                   sx={{ gridColumn: "span 4" }}
                 />
                 <TextField
                   fullWidth
                   variant="filled"
                   type="text"
-                  label="Adresse"
+                  label="Address"
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.address}
@@ -141,7 +159,7 @@ const Offre = () => {
               </Box>
               <Box display="flex" justifyContent="end" mt="20px">
                 <Button type="submit" color="secondary" variant="contained">
-                  Créer une offre
+                  Create New Offer
                 </Button>
               </Box>
             </form>
@@ -152,26 +170,30 @@ const Offre = () => {
   );
 };
 
-// Schéma de validation avec Yup
+const phoneRegExp =
+  /^((\+[1-9]{1,4}[ -]?)|(\([0-9]{,3}\)[ -]?)|([0-9]{,4})[ -]?)*?[0-9]{3,4}[ -]?[0-9]{3,4}$/;
+
 const checkoutSchema = yup.object().shape({
-  company: yup.string().required("Le nom de l'entreprise est obligatoire"),
-  position: yup.string().required("Le poste est obligatoire"),
+  company: yup.string().required("required"),
+  position: yup.string().required("required"),
   workType: yup
     .string()
-    .oneOf(["full-time", "part-time", "contract"], "Type de travail invalide")
-    .required("Le type de travail est obligatoire"),
-  workLocation: yup.string().required("Le lieu de travail est obligatoire"),
-  createdBy: yup.string().required("Le créateur est obligatoire"),
-  address: yup.string().required("L'adresse est obligatoire"),
+    .oneOf(["full-time", "part-time", "internship", "contract"], "Invalid work type")
+    .required("required"),
+  company_phone: yup
+    .string()
+    .matches(phoneRegExp, "Phone number is not valid")
+    .required("required"),
+  company_email: yup.string().email("Invalid email").required("required"),
+  address: yup.string().required("required"),
 });
 
-// Valeurs initiales du formulaire
 const initialValues = {
   company: "",
   position: "",
   workType: "",
-  workLocation: "",
-  createdBy: "",
+  company_phone: "",
+  company_email: "",
   address: "",
 };
 

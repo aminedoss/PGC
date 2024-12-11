@@ -1,28 +1,30 @@
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button, TextField, Snackbar } from "@mui/material";
 import { Formik } from "formik";
 import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "./Header";
 import SidebarComponent from "./Sidebar";
+import React, { useState } from "react";
 
 const Offre = () => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
+  const [openSnackbar, setOpenSnackbar] = useState(false); // État pour contrôler Snackbar
+  const [snackbarMessage, setSnackbarMessage] = useState(""); // État pour le message Snackbar
 
-  const handleFormSubmit = async (values) => {
+  const handleFormSubmit = async (values, { resetForm }) => {
     try {
-      const token = localStorage.getItem('token'); // Retrieve the token
-      console.log("Auth Token:", token); // Log the token
+      const token = localStorage.getItem('token');
+      console.log("Auth Token:", token);
 
-      // Check if the token exists
       if (!token) {
-        throw new Error("NO Auth"); // Throw error if no token is found
+        throw new Error("NO Auth");
       }
 
       const response = await fetch("http://localhost:3300/api/v1/job/create-job", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // Include the token in the Authorization header
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
           company: values.company,
@@ -40,11 +42,19 @@ const Offre = () => {
       }
 
       const data = await response.json();
-      console.log("Job created:", data.job); // Log the created job
+      console.log("Job created:", data.job);
+      resetForm(); // Réinitialiser le formulaire
+      setSnackbarMessage("Job offer created successfully!"); // Message de succès
+      setOpenSnackbar(true); // Ouvrir Snackbar pour afficher le message
     } catch (error) {
-      console.error("Error:", error.message); // Log the error message
-      alert(error.message); // Optional: Display error to the user
+      console.error("Error:", error.message);
+      setSnackbarMessage(error.message); // Définir le message d'erreur
+      setOpenSnackbar(true); // Ouvrir Snackbar pour afficher l'erreur
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false); // Fermer le Snackbar
   };
 
   return (
@@ -165,11 +175,20 @@ const Offre = () => {
             </form>
           )}
         </Formik>
+
+        {/* Snackbar pour le message de succès ou d'erreur */}
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          message={snackbarMessage} // Utiliser snackbarMessage pour le message
+        />
       </Box>
     </Box>
   );
 };
 
+// Schéma de validation
 const phoneRegExp =
   /^((\+[1-9]{1,4}[ -]?)|(\([0-9]{,3}\)[ -]?)|([0-9]{,4})[ -]?)*?[0-9]{3,4}[ -]?[0-9]{3,4}$/;
 
@@ -188,6 +207,7 @@ const checkoutSchema = yup.object().shape({
   address: yup.string().required("required"),
 });
 
+// Valeurs initiales pour le formulaire
 const initialValues = {
   company: "",
   position: "",

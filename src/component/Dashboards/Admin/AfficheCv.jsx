@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import SidebarComponent from "./Sidebar";
+//import SidebarComponent from "./Sidebar";
 function AllCv({ search }) {
   const [cv, setCv] = useState([]);
   const [loading, setLoading] = useState(true);

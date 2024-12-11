@@ -140,7 +140,7 @@ const SidebarAdmin = () => {
             </Typography>
             <Item
               title="CV"
-              to="/cv"
+              to="/all-cv"
               icon={<CalendarTodayOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}

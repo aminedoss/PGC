@@ -17,6 +17,7 @@ import Alloffre from './component/AfficheOffre';
 import CourseComponent from './component/Dashboards/Usercours'
 import MachineLearning from './component/Dashboards/video/Machinelearning';
 import Web from './component/Dashboards/video/Dev';
+import AllCv from './component/Dashboards/Admin/AfficheCv'
 
 
 
@@ -38,6 +39,7 @@ function App() {
             <Route path="/team" element={<Team />} />
             <Route path="/offre" element={<Offre />} />
             <Route path="/cv" element={<GraduateProfile />} />
+            <Route path="/all-cv" element={<AllCv />} />
             <Route path="/quiz" element={<Quiz />} />
             <Route path="/alloffre" element={<Alloffre />} />
             <Route path="/cours" element={<CourseComponent />} />
